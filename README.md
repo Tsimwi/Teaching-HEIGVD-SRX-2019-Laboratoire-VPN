@@ -28,8 +28,8 @@ Dans ce travail de laboratoire, vous allez configurer des routeurs Cisco émulé
 -	Capture Sniffer avec filtres précis sur la communication à épier
 -	Activation du mode « debug » pour certaines fonctions du routeur
 -	Observation des protocoles IPSec
- 
- 
+
+
 ## Matériel
 
 La manière la plus simple de faire ce laboratoire est dans les machines des salles de labo. Le logiciel d'émulation c'est eve-ng. Vous trouverez un [guide très condensé](files/Fonctionnement_EVE-NG.pdf) pour l'utilisation de eve-ng ici.
@@ -92,7 +92,9 @@ Un « protocol » différent de `up` indique la plupart du temps que l’interfa
 
 ---
 
-**Réponse :**  
+**Réponse :**  Nous n'avons pas rencontré de problème particulier.
+
+![allgood](.\images\allgood.PNG)
 
 ---
 
@@ -129,7 +131,7 @@ Pour votre topologie il est utile de contrôler la connectivité entre :
 
 ---
 
-**Réponse :**  
+**Réponse :**  Tous nos pings ont passé correctement.
 
 ---
 
@@ -144,15 +146,16 @@ R2# debug ip icmp
 ```
 Pour déclencher et pratiquer les captures vous allez « pinger » votre routeur R1 avec son IP=193.100.100.1 depuis votre « VPC ». Durant cette opération vous tenterez d’obtenir en simultané les informations suivantes :
 
--	Une trace sniffer (Wireshark) à la sortie du routeur R2 vers Internet. Si vous ne savez pas utiliser Wireshark avec eve-ng, référez-vous au document explicatif eve-ng. Le filtre de **capture** (attention, c'est un filtre de **capture** et pas un filtre d'affichage) suivant peut vous aider avec votre capture : `ip host 193.100.100.1`. 
+-	Une trace sniffer (Wireshark) à la sortie du routeur R2 vers Internet. Si vous ne savez pas utiliser Wireshark avec eve-ng, référez-vous au document explicatif eve-ng. Le filtre de **capture** (attention, c'est un filtre de **capture** et pas un filtre d'affichage) suivant peut vous aider avec votre capture : `ip host 193.100.100.1`.
 -	Les messages de R1 avec `debug ip icmp`.
 
-
-**Question 3: Montrez vous captures**
+**Question 3: Montrez vos captures**
 
 ---
 
 **Screenshots :**  
+
+![ping](.\images\ping.PNG)
 
 ---
 
@@ -174,10 +177,10 @@ Nous allons établir un VPN IKE/IPsec entre le réseau de votre « loopback 1 »
 
 Sur le routeur R1 nous activons un « proposal » IKE. Il s’agit de la configuration utilisée pour la phase 1 du protocole IKE. Le « proposal » utilise les éléments suivants :
 
-| Element          | Value                                                                                                        |
+| Element       | Value                                                                                                                                       |
 |------------------|----------------------------------------------------------------------------------------------------------------------|
-| Encryption       | AES 256 bits    
-| Signature        | Basée sur SHA-1                                                                                                      |
+| Encryption       | AES 256 bits                                                                                                                    |
+| Signature        | Basée sur SHA-1                                                                                                       |
 | Authentification | Preshared Key                                                                                                        |
 | Diffie-Hellman   | avec des nombres premiers sur 1536 bits                                                                              |
 | Renouvellement   | des SA de la Phase I toutes les 30 minutes                                                                           |
@@ -223,16 +226,29 @@ Vous pouvez consulter l’état de votre configuration IKE avec les commandes su
 
 ---
 
-**Réponse :**  
+**Réponse :**  Nous constatons que nous avons configuré le protocole de communication sur lequel les hôtes vont s'accorder lorsqu'ils entrerons en phase de négociation.
+
+Pour RX2, nous avons défini deux polices avec des priorités différentes : *priorité 10*, utilisant Triple-DES, sera choisie en priorité pour les négociations, alors que *priorité 20*, utilisant AES-256, sera choisie le cas échéant. Vu que RX1 ne supporte que AES, c'est de toute façon cet algorithme qui sera utilisé par les deux routeurs.
+
+![q4_show_crypto](.\images\q4_show_crypto.PNG)
 
 ---
-
 
 **Question 5: Utilisez la commande `show crypto isakmp key` et faites part de vos remarques :**
 
 ---
 
-**Réponse :**  
+**Réponse :**  Nous avons configuré la même clé d'authentification sur les deux routeurs, c'est-à-dire :
+
+```sh
+crypto isakmp key cisco-1 address 193.200.{1,2}00.1 no-xauth
+```
+
+- `cisco-1` représente la clé partagée entre les deux routeurs.
+- `address ` spécifie l'adresse du pair distant (l'autre routeur).
+- `no-xauth` permet d'éviter aux routeurs d'avoir à donner un nom d'utilisateur/mot de passe pour s'authentifier l'un envers l'autre.
+
+![q5](.\images\q5.PNG)
 
 ---
 
@@ -321,11 +337,15 @@ debug ip icmp
 
 Pensez à démarrer votre sniffer sur la sortie du routeur R2 vers internet avant de démarrer votre ping, collectez aussi les éventuels messages à la console des différents routeurs. 
 
-**Question 6: Ensuite faites part de vos remarques dans votre rapport. :**
+**Question 6: Ensuite faites part de vos remarques dans votre rapport :**
 
 ---
 
-**Réponse :**  
+**Réponse :**  On constate que le VPN fonctionne correctement puisque, depuis une interface d'un réseau A (172.17.1.100), nous parvenons à effectuer un ping sur une machine d'un réseau B (172.16.1.1).
+
+Comme nous le constatons sur Wireshark, le protocole utilisé est ESP, ou *Encapsulating Security Payload*, qui appartient à IPSec. 
+
+![pingVpnIPsec](.\images\pingVpnIPsec.PNG)
 
 ---
 
@@ -333,7 +353,17 @@ Pensez à démarrer votre sniffer sur la sortie du routeur R2 vers internet avan
 
 ---
 
-**Réponse :**  
+**Réponse :**  Nous voyons plusieurs *timers* utilisés par IKE/IPSec dans cet exercice :
+
+**IKE :**
+
+- Security Association Lifetime : il s'agit d'un *timer* après lequel une SA (*Security Association*) expire. Ce renouvellement est nécessaire car un routeur alloue des ressources mémoire pour chaque SA qu'il génère pour un pair. Du coup, si le pair est inactif, la ressource est gaspillée. Dans le cas où beaucoup de ressources serait gaspillées, le routeur pourrait potentiellement ne plus pouvoir générer de SA. C'est la ligne `lifetime 1800` qui régit ce *timer*.
+- Keepalive : cette option permet au routeur d'envoyer toutes les 30 secondes des messages DPD (*Dead Peer Detection*) à un pair pour savoir s'il est actif ou non. Si le message résulte en un *fail*, un DPD sera envoyé toutes les 3 secondes. C'est la ligne `crypto isakmp keepalive 30 3` qui régit ce *timer*.
+
+**IPSec :** 
+
+- Security Association Lifetime : cette option permet de paramétrer deux choses : le nombre de secondes pendant laquelle va vivre une SA avant d'expirer (paramètre `crypto ipsec security-association lifetime seconds 300`), et le volume de trafic qui va pouvoir passer à travers le tunnel IPSec avant que la SA expire (paramètre `crypto ipsec security-association lifetime kilobytes 2560`).
+- Idle-Time : ce *timer* est indépendants de toute activité des pairs. Ici, il régit simplement un temps global après lequel une SA expire, quelle que soit l'activité du pair. L'option est paramétrée avec la commande`set security-association idle-time 900`.
 
 ---
 
@@ -342,12 +372,11 @@ Pensez à démarrer votre sniffer sur la sortie du routeur R2 vers internet avan
 
 En vous appuyant sur les notions vues en cours et vos observations en laboratoire, essayez de répondre aux questions. À chaque fois, expliquez comment vous avez fait pour déterminer la réponse exacte (capture, config, théorie, ou autre).
 
-
 **Question 8: Déterminez quel(s) type(s) de protocole VPN a (ont) été mis en œuvre (IKE, ESP, AH, ou autre).**
 
 ---
 
-**Réponse :**  
+**Réponse :** 
 
 ---
 
@@ -356,7 +385,14 @@ En vous appuyant sur les notions vues en cours et vos observations en laboratoir
 
 ---
 
-**Réponse :**  
+**Réponse :**  Nous travaillons en mode tunnel, qui intercepte les paquets de la couche Réseau, chiffre, authentifie et encapsule complètement ces paquets.
+
+La configuration se fait au moment de la configuration IPSec :
+
+```sh
+crypto ipsec transform-set STRONG esp-aes 192 esp-sha-hmac 
+  mode tunnel
+```
 
 ---
 
@@ -365,19 +401,17 @@ En vous appuyant sur les notions vues en cours et vos observations en laboratoir
 
 ---
 
-**Réponse :**  
+**Réponse :**  Les parties chiffrées sont : l'entête IP originale, les données et le trlr ??? ESP. L'algorithme utilisé est AES-256.
 
 ---
-
 
 **Question 11: Expliquez quelles sont les parties du paquet qui sont authentifiées. Donnez l’algorithme cryptographique correspondant.**
 
 ---
 
-**Réponse :**  
+**Réponse :**  Les parties authentifiées sont : le header ESP, l'entête IP originale, les données et le trlr ??? ESP. L'algorithme utilisé est HMAC.
 
 ---
-
 
 **Question 12: Expliquez quelles sont les parties du paquet qui sont protégées en intégrité. Donnez l’algorithme cryptographique correspondant.**
 
