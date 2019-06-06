@@ -98,7 +98,7 @@ Un « protocol » différent de `up` indique la plupart du temps que l’interfa
 
 **Réponse :**  Nous n'avons pas rencontré de problème particulier.
 
-![allgood](.\images\allgood.PNG)
+![allgood](images/allgood.PNG)
 
 ---
 
@@ -159,7 +159,7 @@ Pour déclencher et pratiquer les captures vous allez « pinger » votre routeur
 
 **Screenshots :**  
 
-![ping](.\images\ping.PNG)
+![ping](images/ping.PNG)
 
 ---
 
@@ -234,7 +234,7 @@ Vous pouvez consulter l’état de votre configuration IKE avec les commandes su
 
 Pour RX2, nous avons défini deux polices avec des priorités différentes : *priorité 10*, utilisant Triple-DES, sera choisie en priorité pour les négociations, alors que *priorité 20*, utilisant AES-256, sera choisie le cas échéant. Vu que RX1 ne supporte que AES, c'est de toute façon cet algorithme qui sera utilisé par les deux routeurs.
 
-![q4_show_crypto](.\images\q4_show_crypto.PNG)
+![q4_show_crypto](images/q4_show_crypto.PNG)
 
 ---
 
@@ -252,7 +252,7 @@ crypto isakmp key cisco-1 address 193.200.{1,2}00.1 no-xauth
 - `address ` spécifie l'adresse du pair distant (l'autre routeur).
 - `no-xauth` permet d'éviter aux routeurs d'avoir à donner un nom d'utilisateur/mot de passe pour s'authentifier l'un envers l'autre.
 
-![q5](.\images\q5.PNG)
+![q5](images/q5.PNG)
 
 ---
 
@@ -349,7 +349,7 @@ Pensez à démarrer votre sniffer sur la sortie du routeur R2 vers internet avan
 
 Comme nous le constatons sur Wireshark, le protocole utilisé est ESP, ou *Encapsulating Security Payload*, qui appartient à IPSec. 
 
-![pingVpnIPsec](.\images\pingVpnIPsec.PNG)
+![pingVpnIPsec](images/pingVpnIPsec.PNG)
 
 ---
 
