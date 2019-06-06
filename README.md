@@ -1,5 +1,9 @@
 # Teaching-HEIGVD-SRX-2019-Laboratoire-VPN
 
+Auteurs : Legrand Bruno, Yimnaing Créscence, Monthoux Caroline, Poulard Rémi
+
+Date : 06.06.2019
+
 **Ce travail de laboratoire est à faire en équipes de 3 personnes**
 
 **Pour ce travail de laboratoire, il est votre responsabilité de chercher vous-même sur internet, le support du cours ou toute autre source (vous avez aussi le droit de communiquer avec les autres équipes), toute information relative au sujet VPN, le logiciel eve-ng, les routeur Cisco, etc que vous ne comprenez pas !**
@@ -376,7 +380,7 @@ En vous appuyant sur les notions vues en cours et vos observations en laboratoir
 
 ---
 
-**Réponse :** 
+**Réponse :** Il y a IKE (négociation, échange des SA et des clés) avec ESP (chiffrement des payloads).
 
 ---
 
@@ -387,7 +391,7 @@ En vous appuyant sur les notions vues en cours et vos observations en laboratoir
 
 **Réponse :**  Nous travaillons en mode tunnel, qui intercepte les paquets de la couche Réseau, chiffre, authentifie et encapsule complètement ces paquets.
 
-La configuration se fait au moment de la configuration IPSec :
+La configuration se fait au moment du paramétrage IPSec :
 
 ```sh
 crypto ipsec transform-set STRONG esp-aes 192 esp-sha-hmac 
@@ -401,7 +405,7 @@ crypto ipsec transform-set STRONG esp-aes 192 esp-sha-hmac
 
 ---
 
-**Réponse :**  Les parties chiffrées sont : l'entête IP originale, les données et le trlr ??? ESP. L'algorithme utilisé est AES-256.
+**Réponse :**  Les parties chiffrées sont : l'en-tête IP originale, les données et l'en-queue ESP. L'algorithme utilisé est AES-256.
 
 ---
 
@@ -409,7 +413,7 @@ crypto ipsec transform-set STRONG esp-aes 192 esp-sha-hmac
 
 ---
 
-**Réponse :**  Les parties authentifiées sont : le header ESP, l'entête IP originale, les données et le trlr ??? ESP. L'algorithme utilisé est HMAC.
+**Réponse :**  Les parties authentifiées sont : l'en-tête ESP, l'en-tête IP originale, les données et l'en-queue ESP. L'algorithme utilisé est HMAC.
 
 ---
 
@@ -417,6 +421,6 @@ crypto ipsec transform-set STRONG esp-aes 192 esp-sha-hmac
 
 ---
 
-**Réponse :**  
+**Réponse :**  Les parties protégées en intégrité sont : données, entête IP originale et parties du nouvel entête IP. C'est grâce à ICV (Integrity Check Value). L'algorithme utilisé est HMAC avec SHA-1.
 
 ---
